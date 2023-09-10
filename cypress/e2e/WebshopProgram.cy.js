@@ -14,12 +14,15 @@ describe('Bol.com Test Script', () => {
     let productPrijs1;
     let productPrijsDecimaal1;
     let productTitel1;
+    let urlProduct1;
     let productPrijs2;
     let productPrijsDecimaal2;
     let productTitel2;
+    let urlProduct2;
     let productPrijs3;
     let productPrijsDecimaal3;
     let productTitel3;
+    let urlProduct3;
 
     let product1;
     let product2; 
@@ -44,7 +47,7 @@ describe('Bol.com Test Script', () => {
     cy.wait(2000);
    
 
-    // Verzamel de gegevens van product 1
+    // Verzamel de gegevens van product 1 
     cy.get('#js_items_content > li:nth-child(3) > div.product-item__content > wsp-buy-block > div:nth-child(1) > section > div > div > span').should('be.visible').then($element => {
       productPrijs1 = parseFloat($element[0].textContent);});
 
@@ -64,12 +67,40 @@ describe('Bol.com Test Script', () => {
     
     cy.get('#js_items_content > li:nth-child(4) > div.product-item__content > div > div.product-title--inline > wsp-analytics-tracking-event > a').should('be.visible').then($element => {
       productTitel2 = $element[0].textContent;});
+
+    // Ga naar product pagina van product 1 en 2 en kopieer de url
+    cy.get('#js_items_content > li:nth-child(3) > div.product-item__content > div > div.product-title--inline > wsp-analytics-tracking-event > a').click()
+    cy.wait(500);
+    cy.url().then(url => {
+      urlProduct1 = url;
+    }); 
+    cy.go(-1);
+    cy.wait(500);
+
+    cy.get('#js_items_content > li:nth-child(4) > div.product-item__content > div > div.product-title--inline > wsp-analytics-tracking-event > a').click()
+    cy.wait(500);
+    cy.url().then(url => {
+      urlProduct2 = url;
+    }); 
+    cy.go(-1);
+    cy.wait(500);
     
     
     // Druk op de bestelknop en daarna op verder winkelen
     cy.get('.js_preventable_buy_action').eq(4).click() 
     cy.wait(1000);
-    cy.get('[data-test="add-on-page-footer"] > [data-test="btn-continue-shopping"]').click() //cy.get('.add-on-page-header__button').click() // Naar betalen
+
+
+    cy.get('[data-test="modal-window-close"]').then($element1 => {
+      if ($element1.length > 0) {
+        return; 
+        // Element 1 is niet beschikbaar, klik op Element 2
+      } else {  
+        cy.get('[data-test="add-on-page-footer"] > [data-test="btn-continue-shopping"]').click();
+      }
+    });
+    
+    //cy.get('[data-test="add-on-page-footer"] > [data-test="btn-continue-shopping"]').click() //cy.get('.add-on-page-header__button').click() // Naar betalen
     cy.wait(1000);
     
 
@@ -99,6 +130,15 @@ describe('Bol.com Test Script', () => {
       productTitel3 = $element[0].textContent;});
 
 
+    // Ga naar product pagina van product 3 en kopieer de url
+    cy.get('#js_items_content > li:nth-child(3) > div.product-item__content > wsp-analytics-tracking-event > a > span').click()
+    cy.wait(500);
+    cy.url().then(url => {
+      urlProduct3 = url;
+    }); 
+    cy.go(-1);
+    cy.wait(500);
+
 
     //CSV bestand schrijven
     cy.wrap(productPrijs1, productPrijsDecimaal1).then(text => {
@@ -119,25 +159,30 @@ describe('Bol.com Test Script', () => {
         {
           row1: baseUrl,
           row2: ' ',
+          row3: ' ',
         },
         {
           row1: 'Product Titel',
           row2: 'Product Prijs',
+          row3: 'Product URL',
         },
 
         {
         row1: productTitel1,
         row2: product1,
+        row3: urlProduct1,
         },
 
         {
         row1: productTitel2,
         row2: product2,
+        row3: urlProduct2,
         },
 
         {
         row1: productTitel3,
         row2: product3,
+        row3: urlProduct3,
         },
        ]
     
